@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.model.toReactionResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.repository.CommentReactionRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.common.type.PublishType
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.gamereview.model.toReactionResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.gamereview.repository.GameReviewReactionRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.dto.request.UpdateMemberPasswordRequest
@@ -124,9 +125,11 @@ class MemberService(
 
         redisPublisher.publish(
             MessageSubResponse(
-                subjectId = memberId,
-                targetId = targetId,
-                message = message
+                type = PublishType.NOTIFICATION,
+                subjectId = result.subject?.id!!.toString(),
+                targetId = result.target?.id!!.toString(),
+                message = result.message,
+                createdAt = result.createdAt
             )
         )
 

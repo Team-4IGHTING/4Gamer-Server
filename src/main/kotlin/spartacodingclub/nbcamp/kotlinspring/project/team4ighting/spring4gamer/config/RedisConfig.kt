@@ -1,5 +1,9 @@
 package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -9,7 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.listener.ChannelTopic
 import org.springframework.data.redis.listener.RedisMessageListenerContainer
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.service.RedisSubscriber
 
@@ -32,16 +36,32 @@ class RedisConfig(
         val redisTemplate = RedisTemplate<String, Any>()
         redisTemplate.connectionFactory = redisConnectionFactory()
         redisTemplate.keySerializer = StringRedisSerializer()
-        redisTemplate.valueSerializer = Jackson2JsonRedisSerializer(Object::class.java)
+        redisTemplate.valueSerializer = GenericJackson2JsonRedisSerializer(
+            jacksonObjectMapper()
+                .registerModules(JavaTimeModule())
+                .activateDefaultTyping(
+                    BasicPolymorphicTypeValidator
+                        .builder()
+                        .allowIfSubType(Object::class.java)
+                        .build(),
+                    ObjectMapper.DefaultTyping.NON_FINAL
+                )
+        )
+
         return redisTemplate
     }
 
 
     @Bean
-    fun topic(): ChannelTopic =
+    fun notificationTopic(): ChannelTopic =
 
         ChannelTopic("notification")
 
+
+    @Bean
+    fun chatTopic(): ChannelTopic =
+
+        ChannelTopic("chat")
 
     @Bean
     fun messageListenerAdapter(subscriber: RedisSubscriber): MessageListenerAdapter =
@@ -58,6 +78,7 @@ class RedisConfig(
         val container = RedisMessageListenerContainer()
         container.setConnectionFactory(connectionFactory)
         container.addMessageListener(listenerAdapter, ChannelTopic("notification"))
+        container.addMessageListener(listenerAdapter, ChannelTopic("chat"))
 
         return container
     }

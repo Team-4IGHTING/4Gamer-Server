@@ -1,5 +1,6 @@
 package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.infra
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
@@ -16,7 +17,9 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.in
 @Service
 class OAuth2Service(
     private val memberRepository: MemberRepository,
-    private val jwtHelper: JwtHelper
+    private val jwtHelper: JwtHelper,
+    @Value("\${front.server}")
+    private val front: String
 ) : DefaultOAuth2UserService() {
 
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
@@ -56,7 +59,7 @@ class OAuth2Service(
                 role = member.role.name
             )
         )
-        return "http://127.0.0.1:5173/login/google?token=${token.accessToken}"
+        return "${front}/login/google?token=${token.accessToken}"
 
     }
 }

@@ -1,0 +1,62 @@
+name: Spring CICD with Gradle
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
+# 여기까지 깃 액션 Choose a workflow 에서 'java with gradle' 로 만들었을 때 생성된부분
+    
+    - name: Set YML
+      run: |
+        mkdir -p src/main/resources
+        echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+        find src
+
+    - name: Change gradlew permissions
+      run: chmod +x ./gradlew
+      
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
+
+    - name: docker image build
+      run: sudo docker build -t ${{ secrets.DOCKER_NAME }}/4gamer:latest .
+      
+    - name: docker login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_NAME }}
+        password: ${{ secrets.DOCKER_NAME_NAME }}
+
+    - name: docker Hub push
+      run: docker push ${{ secrets.DOCKER_NAME }}/4gamer:latest
+
+    - name: Deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY_TOKEN }}
+        port: ${{ secrets.PORT }}
+        script_stop: true
+        script: |
+          sudo docker pull ${{ secrets.DOCKER_NAME }}/4gamer:latest
+          sudo docker stop server
+          sudo docker rm server || true
+          sudo docker run -d --name server -p 8080:8080 ${{ secrets.DOCKER_NAME }}/4gamer:latest

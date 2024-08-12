@@ -1,0 +1,33 @@
+name: Run Test
+
+on:
+  pull_request:
+    branches:
+      [ develop ]
+
+jobs:
+  build:
+    runs-on: [ ubuntu-latest ]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: java setup
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt' # See 'Supported distributions' for available options
+          java-version: '17'
+          
+      - name: Set YML
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
+          find src
+
+      - name: make executable gradlew
+        run: chmod +x ./gradlew
+
+      - name: run unittest
+        run: |
+          ./gradlew clean test
