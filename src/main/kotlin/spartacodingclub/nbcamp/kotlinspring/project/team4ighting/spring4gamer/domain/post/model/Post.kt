@@ -37,7 +37,7 @@ class Post private constructor(
         private set
 
     @Column(name = "attachment", nullable = true)
-    var attachment: String? = null
+    var attachment: String? = attachment
         private set
 
     @Column(name = "member_id", nullable = false)
