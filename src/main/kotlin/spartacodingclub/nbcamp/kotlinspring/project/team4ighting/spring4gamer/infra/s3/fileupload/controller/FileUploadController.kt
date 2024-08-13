@@ -10,7 +10,7 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.in
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.infra.security.MemberPrincipal
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/s3")
 class FileUploadController(
     private val fileUploadService: FileUploadService,
 ) {
@@ -40,15 +40,14 @@ class FileUploadController(
 
 
     // 이미지 전체 조회
-    @GetMapping("/{bucket}/**")
+    @GetMapping("/list/**")
     fun find(
-        @PathVariable bucket: String,
         request: HttpServletRequest
     ): ResponseEntity<S3GetResponseDto> =
 
         ResponseEntity
             .status(HttpStatus.OK)
-            .body(fileUploadService.find(bucket, request))
+            .body(fileUploadService.find(request))
 
 
     // 이미지 삭제

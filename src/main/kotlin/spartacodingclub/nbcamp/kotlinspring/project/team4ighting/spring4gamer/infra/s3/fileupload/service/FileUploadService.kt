@@ -46,11 +46,10 @@ class FileUploadService(
 
 
     fun find(
-        bucket: String,
         request: HttpServletRequest
     ): S3GetResponseDto {
 
-        val split = request.requestURI.split("/s3/$bucket")
+        val split = request.requestURI.split("/s3/list")
         val prefix = if (split.size < 2) "" else split[1].substring(1)
 
         val fileNames = mutableListOf<String>()

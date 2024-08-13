@@ -75,5 +75,6 @@ fun Channel.toResponse(): ChannelResponse =
         title = title,
         gameTitle = gameTitle,
         introduction = introduction,
+        admin = admin,
         alias = alias
     )

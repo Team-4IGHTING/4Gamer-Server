@@ -163,7 +163,7 @@ class IgdbService(
             }
 
             val query =
-                "fields name, total_rating, total_rating_count; where total_rating_count >= 1000; sort rating desc; limit 10; "
+                "fields name, total_rating, total_rating_count; where total_rating_count >= 1000; sort total_rating desc; limit 10; "
 
             val entity = HttpEntity<String>(query, headers)
 
@@ -182,4 +182,38 @@ class IgdbService(
 
         }
     }
+
+    fun getFollowTopGames(): ResponseEntity<String> {
+
+        try {
+            val token = saveAccessToken.accessToken
+                ?: throw CustomAccessDeniedException("Twitch Token is not available")
+
+            val headers = HttpHeaders().apply {
+                set("Client-ID", clientId)
+                set("Authorization", "Bearer $token")
+                set("content-type", "text/plain")
+            }
+
+            val query =
+                "fields name, hypes; sort hypes desc; limit 10;"
+
+            val entity = HttpEntity<String>(query, headers)
+
+            val response = restTemplate.exchange(
+                "https://api.igdb.com/v4/games/",
+                HttpMethod.POST,
+                entity,
+                String::class.java
+            )
+
+            return response
+
+        } catch (ex: RestClientException) {
+
+            throw RestClientException("REST request failed", ex)
+
+        }
+    }
+
 }

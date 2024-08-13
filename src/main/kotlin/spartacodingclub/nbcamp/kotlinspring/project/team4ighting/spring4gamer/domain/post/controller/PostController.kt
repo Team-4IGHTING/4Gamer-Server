@@ -16,6 +16,7 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.do
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostSimplifiedResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.request.UpdatePostRequest
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostReportResponse
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostTagResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.service.PostService
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.infra.security.MemberPrincipal
 
@@ -65,6 +66,18 @@ class PostController(
         ResponseEntity
             .status(HttpStatus.OK)
             .body(postService.getPost(channelId, boardId, postId, request, response))
+
+
+    @GetMapping("/{postId}/tags")
+    fun getTagsInPost(
+        @PathVariable channelId: Long,
+        @PathVariable boardId: Long,
+        @PathVariable postId: Long,
+    ): ResponseEntity<List<PostTagResponse>> =
+
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(postService.getTagsInPost(channelId, boardId, postId))
 
 
     @PutMapping("/{postId}")

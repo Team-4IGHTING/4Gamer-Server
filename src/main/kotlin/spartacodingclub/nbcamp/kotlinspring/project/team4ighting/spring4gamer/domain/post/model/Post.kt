@@ -28,7 +28,7 @@ class Post private constructor(
     var title: String = title
         private set
 
-    @Column(name = "body", nullable = false)
+    @Column(name = "body", columnDefinition = "MEDIUMTEXT", nullable = false)
     var body: String = body
         private set
 

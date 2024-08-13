@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.board.repository.BoardRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channel.repository.ChannelRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.model.ChannelBlacklistId
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.repository.ChannelBlacklistRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.dto.response.CommentResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.dto.request.CreateCommentRequest
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.dto.request.UpdateCommentRequest
@@ -36,7 +38,8 @@ class CommentService(
     private val memberRepository: MemberRepository,
     private val commentReactionRepository: CommentReactionRepository,
     private val commentReportRepository: CommentReportRepository,
-    private val redissonLockUtility: RedissonLockUtility
+    private val redissonLockUtility: RedissonLockUtility,
+    private val channelBlacklistRepository: ChannelBlacklistRepository
 ) {
 
     @Transactional
@@ -108,7 +111,6 @@ class CommentService(
             commentRepository.delete(targetComment)
         }
     }
-
 
 
     @Transactional
@@ -210,6 +212,8 @@ class CommentService(
                 memberRepository.findByIdOrNull(memberId)
                     ?: throw ModelNotFoundException("Member", memberId)
             else null
+        if (channelBlacklistRepository.existsById(ChannelBlacklistId(channel, member)))
+            throw CustomAccessDeniedException("해당 채널에 대한 권한이 없습니다.")
 
         return kotlin.run { func.invoke(post, comment, member) }
     }

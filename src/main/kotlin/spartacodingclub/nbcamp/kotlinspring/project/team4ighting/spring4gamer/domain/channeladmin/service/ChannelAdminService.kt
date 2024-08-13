@@ -184,4 +184,18 @@ class ChannelAdminService(
     fun getBlacklists(channelId: Long): List<ChannelBlacklistResponse> =
 
         channelBlacklistRepository.findByChannelId(channelId).map { it.toResponse() }
+
+    fun checkBlack(
+        channelId: Long,
+        memberId: UUID
+    ): Boolean {
+        val channel =
+            channelRepository.findByIdOrNull(channelId)
+                ?: throw ModelNotFoundException("Channel", channelId)
+        val member =
+            memberRepository.findByIdOrNull(memberId)
+                ?: throw ModelNotFoundException("Member", memberId)
+        return channelBlacklistRepository
+            .existsById(ChannelBlacklistId(channel, member))
+    }
 }

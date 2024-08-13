@@ -7,5 +7,6 @@ data class ChannelResponse(
     val title: String,
     val gameTitle: String,
     val introduction: String,
+    val admin: UUID,
     val alias: String
 )

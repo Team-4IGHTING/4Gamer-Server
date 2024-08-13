@@ -4,6 +4,7 @@ import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostTagResponse
 
 @Entity
 @Table(name = "post_tag")
@@ -29,3 +30,9 @@ class PostTag private constructor(
             )
     }
 }
+
+fun PostTag.toResponse(): PostTagResponse =
+
+    PostTagResponse(
+        name = id.tag.name
+    )

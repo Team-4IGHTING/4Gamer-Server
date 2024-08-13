@@ -133,4 +133,15 @@ class ChannelAdminController(
         ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .body(channelAdminService.deleteChannel(channelId, principal.id))
+
+    // 차단 체크
+    @GetMapping
+    fun checkBlack(
+        @AuthenticationPrincipal principal: MemberPrincipal,
+        @PathVariable channelId: Long,
+    ): ResponseEntity<Boolean> =
+
+        ResponseEntity
+            .status(HttpStatus.NOT_ACCEPTABLE)
+            .body(channelAdminService.checkBlack(channelId, principal.id))
 }
