@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.data.repository.findByIdOrNull
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.gamereview.dto.request.CreateGameReviewRequest
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.gamereview.model.GameReview
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.model.Member
@@ -23,15 +22,15 @@ class GameReviewRepositoryTests @Autowired constructor(
     @BeforeEach
     fun setUp() {
         memberRepository.saveAndFlush(MEMBER)
-        gameReviewRepository.saveAllAndFlush(DEFAULT_GAME_REVIEW_LIST)
+        val gameReviewList = gameReviewRepository.saveAllAndFlush(DEFAULT_GAME_REVIEW_LIST)
 
-        val gameReview1 = gameReviewRepository.findByIdOrNull(1L)!!
+        val gameReview1 = gameReviewList[0]
         gameReview1.upvotes = 10
 
-        val gameReview2 = gameReviewRepository.findByIdOrNull(2L)!!
+        val gameReview2 = gameReviewList[1]
         gameReview2.upvotes = 5
 
-        val gameReview3 = gameReviewRepository.findByIdOrNull(3L)!!
+        val gameReview3 = gameReviewList[2]
         gameReview3.upvotes = 1
     }
 
