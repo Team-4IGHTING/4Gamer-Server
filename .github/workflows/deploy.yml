@@ -2,7 +2,7 @@ name: Spring CICD with Gradle
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ feature/#72-blacklist ]
 
 jobs:
   build:
