@@ -1,6 +1,6 @@
 package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.dto
 
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.common.type.PublishType
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.type.PublishType
 import java.time.ZonedDateTime
 
 data class MessageSubResponse(

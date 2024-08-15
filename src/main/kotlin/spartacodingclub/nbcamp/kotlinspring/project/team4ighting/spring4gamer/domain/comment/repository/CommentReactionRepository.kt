@@ -12,4 +12,10 @@ interface CommentReactionRepository : JpaRepository<CommentReaction, CommentReac
 
     @Query("select cr from CommentReaction cr join fetch cr.id.comment where cr.id.member.id = :memberId")
     fun findByMemberId(memberId: UUID): List<CommentReaction>
+
+    @Query("select cr from CommentReaction cr join fetch cr.id.comment where cr.id.comment.id = :commentId")
+    fun findAllByCommentId(commentId: Long): List<CommentReaction>
+
+    @Query("select cr from CommentReaction cr join fetch cr.id.comment where cr.id.comment.id in :commentIds")
+    fun findAllByCommentIdIn(commentIds: List<Long>): List<CommentReaction>
 }

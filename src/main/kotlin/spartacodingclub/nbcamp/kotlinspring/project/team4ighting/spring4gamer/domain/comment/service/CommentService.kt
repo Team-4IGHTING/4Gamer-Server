@@ -108,6 +108,8 @@ class CommentService(
         doAfterResourceValidation(channelId, boardId, postId, commentId, memberId) { _, targetComment, member ->
             checkCommentOwnership(targetComment!!, member!!)
 
+            val commentReactions = commentReactionRepository.findAllByCommentId(targetComment.id!!)
+            commentReactionRepository.deleteAllInBatch(commentReactions)
             commentRepository.delete(targetComment)
         }
     }

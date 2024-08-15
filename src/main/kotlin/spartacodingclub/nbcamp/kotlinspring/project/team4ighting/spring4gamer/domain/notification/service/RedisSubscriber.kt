@@ -7,8 +7,8 @@ import org.springframework.data.redis.connection.MessageListener
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.common.type.PublishType
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.dto.MessageSubResponse
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.type.PublishType
 
 @Service
 class RedisSubscriber(
@@ -40,6 +40,14 @@ class RedisSubscriber(
                         "/sub/chat/${message.roomId}",
                         message
                     )
+
+                PublishType.ENTER -> {
+                    messageTemplate
+                        .convertAndSend(
+                            "/sub/chat/${message.roomId}",
+                            "${message.subjectId}님이 입장하셨습니다."
+                        )
+                }
 
                 PublishType.EXIT -> {
 

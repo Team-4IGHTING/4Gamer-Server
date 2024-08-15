@@ -102,6 +102,7 @@ fun Post.toResponse(): PostResponse =
         createdAt = createdAt,
         updatedAt = updatedAt,
         author = author,
+        memberId = memberId,
         board = board.toResponse(),
         attachment = attachment,
     )
@@ -116,6 +117,7 @@ fun Post.toPostSimplifiedResponse(): PostSimplifiedResponse =
         upvotes = upvotes,
         downvotes = downvotes,
         author = author,
+        memberId = memberId,
         createdAt = createdAt,
         attachment = attachment,
     )

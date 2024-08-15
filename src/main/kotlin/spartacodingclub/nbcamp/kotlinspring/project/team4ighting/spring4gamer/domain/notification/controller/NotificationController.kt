@@ -1,4 +1,4 @@
-package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification
+package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.notification.controller
 
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.web.bind.annotation.RestController

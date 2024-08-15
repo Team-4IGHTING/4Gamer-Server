@@ -12,6 +12,7 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.do
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channel.repository.ChannelRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.model.ChannelBlacklistId
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.repository.ChannelBlacklistRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.repository.CommentReactionRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.repository.CommentRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.model.Member
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.repository.MemberRepository
@@ -41,7 +42,8 @@ class PostService(
     private val tagRepository: TagRepository,
     private val postTagRepository: PostTagRepository,
     private val redissonLockUtility: RedissonLockUtility,
-    private val channelBlacklistRepository: ChannelBlacklistRepository
+    private val channelBlacklistRepository: ChannelBlacklistRepository,
+    private val commentReactionRepository: CommentReactionRepository
 ) {
 
     @Transactional
@@ -184,10 +186,14 @@ class PostService(
         doAfterResourceValidation(channelId, boardId, postId, memberId) { _, targetPost, member ->
             checkResourceOwnership(targetPost!!, member!!)
 
+            val postReactions = postReactionRepository.findByPostId(targetPost.id!!)
             val comments = commentRepository.findAllByPostId(targetPost.id!!)
+            val commentReactions = commentReactionRepository.findAllByCommentIdIn(comments.map { it.id!! })
             val tags = postTagRepository.findAllTagsByPostId(targetPost.id!!)
 
+            commentReactionRepository.deleteAllInBatch(commentReactions)
             commentRepository.deleteAllInBatch(comments)
+            postReactionRepository.deleteAllInBatch(postReactions)
             postTagRepository.deleteAllInBatch(tags)
             postRepository.delete(targetPost)
         }

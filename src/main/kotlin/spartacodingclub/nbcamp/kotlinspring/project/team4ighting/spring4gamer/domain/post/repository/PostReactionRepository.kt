@@ -12,4 +12,10 @@ interface PostReactionRepository : JpaRepository<PostReaction, PostReactionId> {
 
     @Query("select pr from PostReaction pr join fetch pr.id.post where pr.id.member.id = :memberId")
     fun findByMemberId(memberId: UUID): List<PostReaction>
+
+    @Query("select pr from PostReaction pr join fetch pr.id.post where pr.id.post.id = :postId")
+    fun findByPostId(postId: Long): List<PostReaction>
+
+    @Query("select pr from PostReaction pr join fetch pr.id.post where pr.id.post.id in :postIds")
+    fun findAllByPostIdIn(postIds: List<Long>): List<PostReaction>
 }

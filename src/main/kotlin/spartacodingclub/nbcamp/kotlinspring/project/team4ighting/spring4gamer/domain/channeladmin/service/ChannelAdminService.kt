@@ -19,21 +19,27 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.do
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.model.ChannelBlacklistId
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.model.toResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.channeladmin.repository.ChannelBlacklistRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.repository.CommentReactionRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.comment.repository.CommentRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.repository.MemberRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.repository.PostReactionRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.repository.PostRepository
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.repository.PostTagRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.CustomAccessDeniedException
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.ModelNotFoundException
 import java.util.*
 
 @Service
 class ChannelAdminService(
+    private val memberRepository: MemberRepository,
     private val channelRepository: ChannelRepository,
     private val channelBlacklistRepository: ChannelBlacklistRepository,
-    private val commentRepository: CommentRepository,
-    private val memberRepository: MemberRepository,
     private val boardRepository: BoardRepository,
     private val postRepository: PostRepository,
+    private val postTagRepository: PostTagRepository,
+    private val postReactionRepository: PostReactionRepository,
+    private val commentRepository: CommentRepository,
+    private val commentReactionRepository: CommentReactionRepository,
 ) {
 
     @Transactional
@@ -76,9 +82,15 @@ class ChannelAdminService(
 
         doAfterResourceValidation(channelId, boardId, channelAdminId) { _, targetBoard ->
             val subPosts = postRepository.findAllByBoardId(targetBoard!!.id!!)
+            val subPostTags = postTagRepository.findAllByPostIdIn(subPosts.map { it.id!! })
+            val subPostReactions = postReactionRepository.findAllByPostIdIn(subPosts.map { it.id!! })
             val subComments = commentRepository.findAllByPostIdIn(subPosts.map { it.id!! })
+            val subCommentReactions = commentReactionRepository.findAllByCommentIdIn(subComments.map { it.id!! })
 
+            commentReactionRepository.deleteAllInBatch(subCommentReactions)
             commentRepository.deleteAllInBatch(subComments)
+            postReactionRepository.deleteAllInBatch(subPostReactions)
+            postTagRepository.deleteAllInBatch(subPostTags)
             postRepository.deleteAllInBatch(subPosts)
             boardRepository.delete(targetBoard)
         }
@@ -148,9 +160,15 @@ class ChannelAdminService(
         doAfterResourceValidation(channelId, null, channelAdminId) { targetChannel, _ ->
             val subBoards = boardRepository.findAllByChannelId(channelId)
             val subPosts = postRepository.findAllByBoardIdIn(subBoards.map { it.id!! })
+            val subPostTags = postTagRepository.findAllByPostIdIn(subPosts.map { it.id!! })
+            val subPostReactions = postReactionRepository.findAllByPostIdIn(subPosts.map { it.id!! })
             val subComments = commentRepository.findAllByPostIdIn(subPosts.map { it.id!! })
+            val subCommentReactions = commentReactionRepository.findAllByCommentIdIn(subComments.map { it.id!! })
 
+            commentReactionRepository.deleteAllInBatch(subCommentReactions)
             commentRepository.deleteAllInBatch(subComments)
+            postReactionRepository.deleteAllInBatch(subPostReactions)
+            postTagRepository.deleteAllInBatch(subPostTags)
             postRepository.deleteAllInBatch(subPosts)
             boardRepository.deleteAllInBatch(subBoards)
             channelRepository.delete(targetChannel)
