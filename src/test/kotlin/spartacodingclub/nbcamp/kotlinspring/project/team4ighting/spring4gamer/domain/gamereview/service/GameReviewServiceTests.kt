@@ -23,13 +23,14 @@ class GameReviewServiceTests(
 ) : BehaviorSpec({
 
     val gameTitle = "Stardew Valley"
+    val memberId = UUID.fromString("b3a77697-c0f6-4163-94e4-3a985c551989")
 
     val savedGameReview = GameReviewResponse(
         id = 1L,
         gameTitle = gameTitle,
         description = "Description...",
         point = 10,
-        memberId = UUID.fromString("b3a77697-c0f6-4163-94e4-3a985c551989"),
+        memberId = memberId,
         upvotes = 0,
         downvotes = 0,
         createdAt = ZonedDateTime.of(2024, 8, 15, 12, 12, 12, 12, ZoneId.of("Asia/Seoul")),
@@ -41,7 +42,7 @@ class GameReviewServiceTests(
         gameTitle = gameTitle,
         description = "Updated Description...",
         point = 5,
-        memberId = UUID.fromString("b3a77697-c0f6-4163-94e4-3a985c551989"),
+        memberId = memberId,
         upvotes = 0,
         downvotes = 0,
         createdAt = ZonedDateTime.of(2024, 8, 15, 12, 12, 12, 12, ZoneId.of("Asia/Seoul")),
@@ -53,6 +54,7 @@ class GameReviewServiceTests(
     every { igdbService.searchGamesByName(any()) } returns ResponseEntity.status(HttpStatus.OK).body(gameTitle)
     every { gameReviewService.createGameReview(any(), any()) } returns savedGameReview
     every { gameReviewService.updateGameReview(any(), any(), any()) } returns updatedGameReview
+    every { gameReviewService.deleteGameReview(any(), any()) } returns Unit
 
 
     Given("로그인한 유저가") {
@@ -89,6 +91,19 @@ class GameReviewServiceTests(
                 result.id shouldBe updatedGameReview.id
                 result.point shouldBe updatedGameReview.point
                 result.description shouldBe updatedGameReview.description
+            }
+        }
+
+        When("게임리뷰 삭제 요청을 하면") {
+            val gameReviewId = 1L
+
+            val result = gameReviewService.deleteGameReview(
+                gameReviewId = gameReviewId,
+                memberId = memberId
+            )
+
+            Then("게임리뷰가 삭제된다.") {
+                result shouldBe Unit
             }
         }
     }
