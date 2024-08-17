@@ -27,6 +27,9 @@ class CookieUtil {
             val viewCountCookie = Cookie("viewCounts", newCookieValue)
 
             viewCountCookie.maxAge = getRemainingTimeUntilMidnight()
+            viewCountCookie.path = "/"
+            viewCountCookie.secure = true
+            viewCountCookie.isHttpOnly = true
 
             return response.addCookie(viewCountCookie)
         }
