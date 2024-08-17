@@ -17,17 +17,17 @@ import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.do
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.model.Member
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.member.repository.MemberRepository
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.request.CreatePostRequest
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostResponse
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostSimplifiedResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.request.UpdatePostRequest
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostReportResponse
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostResponse
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostSimplifiedResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.dto.response.PostTagResponse
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.model.*
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.post.repository.*
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.CustomAccessDeniedException
-import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.ModelNotFoundException
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.util.CookieUtil
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.domain.util.RedissonLockUtility
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.CustomAccessDeniedException
+import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.ModelNotFoundException
 import java.util.*
 
 @Service
@@ -208,25 +208,24 @@ class PostService(
         memberId: UUID,
         isUpvoting: Boolean
     ) {
+        redissonLockUtility.runExclusive("$postId") {
 
-        doAfterResourceValidation(channelId, boardId, postId, memberId) { _, targetPost, member ->
-            val reaction = postReactionRepository.findByIdPostIdAndIdMemberId(postId, memberId)
+            doAfterResourceValidation(channelId, boardId, postId, memberId) { _, targetPost, member ->
+                val reaction = postReactionRepository.findByIdPostIdAndIdMemberId(postId, memberId)
 
-            if (reaction == null) {
-                val newReaction = PostReaction.from(member!!, targetPost!!, isUpvoting)
+                if (reaction == null) {
+                    val newReaction = PostReaction.from(member!!, targetPost!!, isUpvoting)
 
-                redissonLockUtility.runExclusive("$postId") {
                     targetPost.increaseReaction(isUpvoting)
-                }
-                postReactionRepository.save(newReaction)
-            } else {
-                if (reaction.isUpvoting == isUpvoting)
-                    throw IllegalArgumentException("같은 대상에 같은 반응을 중복하여 넣을 수 없습니다.")
+                    postReactionRepository.save(newReaction)
+                } else {
+                    if (reaction.isUpvoting == isUpvoting)
+                        throw IllegalArgumentException("같은 대상에 같은 반응을 중복하여 넣을 수 없습니다.")
 
-                redissonLockUtility.runExclusive("$postId") {
                     targetPost!!.applySwitchedReaction(isUpvoting)
+
+                    reaction.isUpvoting = isUpvoting
                 }
-                reaction.isUpvoting = isUpvoting
             }
         }
     }
@@ -239,15 +238,15 @@ class PostService(
         postId: Long,
         memberId: UUID
     ) {
+        redissonLockUtility.runExclusive("$postId") {
 
-        doAfterResourceValidation(channelId, boardId, postId, memberId) { _, targetPost, _ ->
-            val reaction = postReactionRepository.findByIdPostIdAndIdMemberId(postId, memberId)
-                ?: throw ModelNotFoundException("PostReaction", "${postId}/${memberId}")
+            doAfterResourceValidation(channelId, boardId, postId, memberId) { _, targetPost, _ ->
+                val reaction = postReactionRepository.findByIdPostIdAndIdMemberId(postId, memberId)
+                    ?: throw ModelNotFoundException("PostReaction", "${postId}/${memberId}")
 
-            redissonLockUtility.runExclusive("$postId") {
                 targetPost!!.decreaseReaction(reaction.isUpvoting)
+                postReactionRepository.delete(reaction)
             }
-            postReactionRepository.delete(reaction)
         }
     }
 
