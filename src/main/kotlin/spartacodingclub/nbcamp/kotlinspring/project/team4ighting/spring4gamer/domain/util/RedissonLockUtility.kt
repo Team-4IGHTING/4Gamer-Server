@@ -20,7 +20,11 @@ class RedissonLockUtility(
             else throw RuntimeException("Request timed out")
         }
             .onSuccess { lock.unlock() }
-            .onFailure { lock.unlock() }
+            .onFailure {
+                if (lock.isHeldByCurrentThread) {
+                    lock.unlock()
+                }
+            }
             .getOrThrow()
     }
 }
