@@ -49,6 +49,12 @@ class IgdbController(
             .status(HttpStatus.OK)
             .body(igdbService.searchGamesByName(gameTitle))
 
+    @PostMapping("/get-name/cached")
+    fun searchGamesByNameCached(@RequestParam gameTitle: String): ResponseEntity<ResponseEntity<String>> =
+
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(igdbService.searchGamesByNameCached(gameTitle))
 
     // 게임 네임 사용 가능 체크
     @PostMapping("/check-name")
@@ -67,6 +73,13 @@ class IgdbController(
             .status(HttpStatus.OK)
             .body(igdbService.getTopGames())
 
+    @PostMapping("/top-games/cached")
+    fun getTopGamesCached(): ResponseEntity<ResponseEntity<String>> =
+
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(igdbService.getTopGamesCached())
+
     // 팔로우 순 게임 Top10
     @PostMapping("/top-follow")
     fun getFollowTopGames(): ResponseEntity<ResponseEntity<String>> =
@@ -74,4 +87,11 @@ class IgdbController(
         ResponseEntity
             .status(HttpStatus.OK)
             .body(igdbService.getFollowTopGames())
+
+    @PostMapping("/top-follow/cached")
+    fun getFollowTopGamesCached(): ResponseEntity<ResponseEntity<String>> =
+
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(igdbService.getFollowTopGamesCached())
 }

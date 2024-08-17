@@ -67,7 +67,7 @@ class ChannelService(
             ?: throw ModelNotFoundException("Channel", channelId)
 
 
-    @Cacheable("TopPosts", sync = true)
+    @Cacheable(value = ["TopPosts"], key = "#channelId", sync = true)
     fun getChannelTopPostList(channelId: Long): List<PostResponse> =
 
         channelRepository.findTopPosts(channelId).map { it.toResponse() }

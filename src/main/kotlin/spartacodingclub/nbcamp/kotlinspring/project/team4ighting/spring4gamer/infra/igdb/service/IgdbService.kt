@@ -2,15 +2,19 @@ package spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.i
 
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.exception.CustomAccessDeniedException
 import spartacodingclub.nbcamp.kotlinspring.project.team4ighting.spring4gamer.infra.igdb.SaveAccessToken
+import java.time.Duration
 
 @Service
 class IgdbService(
@@ -24,7 +28,9 @@ class IgdbService(
     private val tokenUrl: String,
 
     private val restTemplate: RestTemplate,
-    private val saveAccessToken: SaveAccessToken
+    private val saveAccessToken: SaveAccessToken,
+
+    private val redisTemplate: RedisTemplate<String, String>
 ) {
 
     fun getAccessToken(): String? {
@@ -79,12 +85,31 @@ class IgdbService(
         }
     }
 
+    fun searchGamesByNameCached(
+        gameTitle: String
+    ): ResponseEntity<String> {
+
+        if (redisTemplate.hasKey("GameTitleQuery::$gameTitle"))
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(redisTemplate.opsForValue().get("GameTitleQuery::$gameTitle"))
+
+        return getTopGames().also{ result ->
+
+            if (result.statusCode.is2xxSuccessful)
+                redisTemplate.opsForValue().set(
+                    "GameTitleQuery::$gameTitle",
+                    result.body!!,
+                    Duration.ofHours(1)
+                )
+        }
+    }
+
     fun checkGamesName(
         gameTitle: String
     ): Boolean {
 
         try {
-
             val token = saveAccessToken.accessToken
                 ?: throw CustomAccessDeniedException("Twitch Token is not available")
 
@@ -183,6 +208,24 @@ class IgdbService(
         }
     }
 
+    fun getTopGamesCached(): ResponseEntity<String> {
+
+        if (redisTemplate.hasKey("TopGamesByRating"))
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(redisTemplate.opsForValue().get("TopGamesByRating"))
+
+        return getTopGames().also{ result ->
+
+            if (result.statusCode.is2xxSuccessful)
+                redisTemplate.opsForValue().set(
+                    "TopGamesByRating",
+                    result.body!!,
+                    Duration.ofHours(1)
+                )
+        }
+    }
+
     fun getFollowTopGames(): ResponseEntity<String> {
 
         try {
@@ -216,4 +259,21 @@ class IgdbService(
         }
     }
 
+    fun getFollowTopGamesCached(): ResponseEntity<String> {
+
+        if (redisTemplate.hasKey("TopGamesByFollow"))
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(redisTemplate.opsForValue().get("TopGamesByFollow"))
+
+        return getFollowTopGames().also{ result ->
+
+            if (result.statusCode.is2xxSuccessful)
+                redisTemplate.opsForValue().set(
+                    "TopGamesByFollow",
+                    result.body!!,
+                    Duration.ofHours(1)
+                )
+        }
+    }
 }
